@@ -12,10 +12,11 @@ program
   .option('--branch <branch>', 'Name of the branch', undefined)
   .option(
     '--commit-msg-template <template>',
-    `Template for commit message and tag name. Available variables:
-    {package_name} - name of the package
-    {package_version} - version of the package
-    Example: {package_name}@{package_version}`
+    `Template for commit message and tag name.
+    Example: {package_name}@{package_version}
+    Available variables:
+      {package_name} - name of the package
+      {package_version} - version of the package`
   )
   .option('--ignore-git-changes', 'Ignore uncommitted changes', false)
   .action((options: { dryRun: boolean; branch: string | undefined; commitMsgTemplate: string | undefined; ignoreGitChanges: boolean }) => {

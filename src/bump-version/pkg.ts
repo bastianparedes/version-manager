@@ -1,10 +1,61 @@
 import path from 'path';
-import { getPackages, Package } from '@manypkg/get-packages';
+import type { PackageJson } from 'type-fest';
 import prompts from 'prompts';
 import { inc, type ReleaseType } from 'semver';
 import { remoteTagsPromise, removeLocalTag } from './git';
 import { execa } from 'execa';
 import { getFilledTemplate } from '../utils/template';
+import fs from 'fs/promises';
+import { glob } from 'glob';
+
+const repositoryDataPromise = (async () => {
+  const rootDir = process.cwd();
+  const rootPkgPath = path.join(rootDir, 'package.json');
+  const rootPkgJson: PackageJson = JSON.parse(await fs.readFile(rootPkgPath, 'utf-8'));
+  const workspaces = (rootPkgJson.workspaces || []) as string[];
+
+  const packagePaths = new Set<string>();
+  for (const pattern of workspaces) {
+    const matches = await glob(pattern, { cwd: rootDir, absolute: true });
+    for (const match of matches) {
+      if (
+        await fs.stat(path.join(match, 'package.json')).then(
+          () => true,
+          () => false
+        )
+      ) {
+        packagePaths.add(match);
+      }
+    }
+  }
+
+  const subPkgs = [];
+  for (const pkgPath of packagePaths) {
+    const pkgJson: PackageJson = JSON.parse(await fs.readFile(path.join(pkgPath, 'package.json'), 'utf-8'));
+    subPkgs.push({
+      path: pkgPath,
+      jsonPath: path.resolve(pkgPath, 'package.json'),
+      name: pkgJson.name as string,
+      version: pkgJson.version as string,
+      isMonoRepo: true
+    });
+  }
+
+  const rootPkg = {
+    path: rootDir,
+    jsonPath: rootPkgPath,
+    name: rootPkgJson.name as string,
+    version: rootPkgJson.version as string,
+    isMonoRepo: subPkgs.length > 0
+  };
+
+  return {
+    allPkgs: [rootPkg, ...subPkgs],
+    rootPkg,
+    subPkgs,
+    isMonoRepo: subPkgs.length > 0
+  };
+})();
 
 type PkgType = {
   isMonoRepo: boolean;
@@ -13,13 +64,6 @@ type PkgType = {
   name: string;
   version: string;
 };
-
-const formatPkg = (pkg: Package) => ({
-  path: pkg.dir,
-  jsonPath: path.resolve(pkg.dir, 'package.json'),
-  name: pkg.packageJson.name,
-  version: pkg.packageJson.version
-});
 
 export const getPublishedVersions = async (packageName: string) => {
   try {
@@ -32,30 +76,15 @@ export const getPublishedVersions = async (packageName: string) => {
 };
 
 export const getPkg = async (name: string) => {
-  const { packages } = await getPackages(process.cwd());
-  const requiredPkg = packages.find((pkg) => pkg.packageJson.name === name);
+  const repositoryData = await repositoryDataPromise;
+  const requiredPkg = repositoryData.allPkgs.find((pkg) => pkg.name === name);
   if (!requiredPkg) throw new Error(`package.json not found for project ${name}`);
 
-  return formatPkg(requiredPkg);
-};
-
-export const getRepositoryData = async () => {
-  const { packages, rootPackage } = await getPackages(process.cwd());
-  if (!rootPackage) throw new Error('package.json not found in root');
-
-  const subPkgs = packages.filter((pkg) => pkg.relativeDir !== '.').map((pkg) => formatPkg(pkg));
-
-  const isMonoRepo = subPkgs.length > 0;
-
-  return {
-    rootPkg: formatPkg(rootPackage),
-    subPkgs,
-    isMonoRepo
-  };
+  return requiredPkg;
 };
 
 export const getPkgToWork = async () => {
-  const repositoryData = await getRepositoryData();
+  const repositoryData = await repositoryDataPromise;
   if (repositoryData.isMonoRepo) {
     const { subPkgName }: { subPkgName: string } = await prompts({
       type: 'select',
@@ -67,13 +96,11 @@ export const getPkgToWork = async () => {
       }))
     });
     return {
-      ...(await getPkg(subPkgName)),
-      isMonoRepo: repositoryData.isMonoRepo
+      ...(await getPkg(subPkgName))
     };
   }
   return {
-    ...(await getPkg(repositoryData.rootPkg.name)),
-    isMonoRepo: repositoryData.isMonoRepo
+    ...(await getPkg(repositoryData.rootPkg.name))
   };
 };
 

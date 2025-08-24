@@ -15,13 +15,13 @@ build({
   bundle: true,
   platform: 'node',
   target: 'node22',
-  format: 'esm',
-  outfile: 'dist/index.js',
+  format: 'cjs',
+  outfile: 'dist/index.cjs',
   banner: {
     js: '#!/usr/bin/env node'
   },
   external: [
-    ...Object.keys(pkg.dependencies || {}),
+    'fs', 'path', 'os', 'crypto', 'util', 'stream',
     ...Object.keys(pkg.peerDependencies || {})
   ],
 }).catch(() => process.exit(1));

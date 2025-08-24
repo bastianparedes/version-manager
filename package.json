@@ -5,8 +5,8 @@
   "private": false,
   "scripts": {
     "build": "tsc && rimraf dist && node esbuild.config.js",
-    "bump-version": "npm run build && node dist/index.js bump-version",
-    "bump-version:dry-run": "npm run build && node dist/index.js bump-version --dry-run --ignore-git-changes",
+    "bump-version": "npm run build && node dist/index.cjs bump-version",
+    "bump-version:dry-run": "npm run build && node dist/index.cjs bump-version --dry-run --ignore-git-changes",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "vitest",
@@ -15,7 +15,6 @@
   "author": "Bastián Paredes",
   "description": "Command-line tool to easily bump versions, handle pre-releases, and create Git tags for both monorepos and standalone packages.",
   "dependencies": {
-    "@manypkg/get-packages": "^3.1.0",
     "commander": "^14.0.0",
     "execa": "^9.6.0",
     "prompts": "^2.4.2",
@@ -24,6 +23,7 @@
   },
   "devDependencies": {
     "@types/node": "^24.3.0",
+    "@types/package-json": "^5.0.0",
     "@types/prompts": "^2.4.9",
     "@types/semver": "^7.7.0",
     "@typescript-eslint/eslint-plugin": "^8.39.1",
@@ -36,6 +36,7 @@
     "prettier": "^3.6.2",
     "rimraf": "^6.0.1",
     "ts-node": "^10.9.2",
+    "type-fest": "^4.41.0",
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.39.1",
     "vitest": "^3.2.4"
@@ -47,6 +48,6 @@
     "dist"
   ],
   "bin": {
-    "version-manager": "./dist/index.js"
+    "version-manager": "./dist/index.cjs"
   }
 }
