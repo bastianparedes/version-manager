@@ -4,9 +4,9 @@
   "type": "module",
   "private": false,
   "scripts": {
-    "build": "tsc && rimraf dist && node esbuild.config.js",
-    "bump-version": "npm run build && node dist/index.cjs bump-version",
-    "bump-version:dry-run": "npm run build && node dist/index.cjs bump-version --dry-run --ignore-git-changes",
+    "build": "tsc && rimraf ./dist && node ./esbuild.config.js",
+    "bump-version": "npm run build && node ./dist/index.cjs bump-version",
+    "bump-version:dry-run": "npm run build && node ./dist/index.cjs bump-version --dry-run --ignore-git-changes",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "vitest",
@@ -48,6 +48,6 @@
     "dist"
   ],
   "bin": {
-    "version-manager": "./dist/index.cjs"
+    "version-manager": "dist/index.cjs"
   }
 }
