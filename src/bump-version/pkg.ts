@@ -2,7 +2,7 @@ import path from 'path';
 import type { PackageJson } from 'type-fest';
 import prompts from 'prompts';
 import { inc, type ReleaseType } from 'semver';
-import { remoteTagsPromise, removeLocalTag } from './git';
+import { git, remoteTagsPromise, removeLocalTag } from './git';
 import { execa } from 'execa';
 import { getFilledTemplate } from '../utils/template';
 import fs from 'fs/promises';
@@ -163,5 +163,8 @@ export const setNewVersion = async (version: string, tag: string, pkg: PkgType, 
   if (localTags.includes(tag)) {
     await removeLocalTag(tag);
   }
-  await execa('npm', ['version', version, '-m', tag], { cwd: pkg.path });
+  await execa('npm', ['version', version, '--no-git-tag-version'], { cwd: pkg.path });
+  await git.add(['.']);
+  await git.commit(tag);
+  await git.addTag(tag);
 };

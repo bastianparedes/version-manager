@@ -1,6 +1,6 @@
 import simpleGit from 'simple-git';
 
-const git = simpleGit(process.cwd());
+export const git = simpleGit(process.cwd());
 
 export const getBranchData = async (initialName: string | undefined) => {
   const branch = await git.branch();
