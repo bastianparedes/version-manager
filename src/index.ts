@@ -1,9 +1,10 @@
 import { Command } from 'commander';
 import { bumpVersion } from './bump-version';
+import packageJson from '../package.json';
 
 export const program = new Command();
 
-program.name('@bastian-paredes/version-manager').description('Command-line tool to easily bump versions, handle pre-releases, and create Git tags for both monorepos and standalone packages.');
+program.name(packageJson.name).description(packageJson.description).version(packageJson.version);
 
 program
   .command('bump-version')
@@ -20,6 +21,7 @@ program
   )
   .option('--ignore-git-changes', 'Ignore uncommitted changes', false)
   .action((options: { dryRun: boolean; branch: string | undefined; commitMsgTemplate: string | undefined; ignoreGitChanges: boolean }) => {
+    console.log(`Runing \x1b[4m\x1b[92m${packageJson.name}\x1b[0m version \x1b[4m\x1b[92m${packageJson.version}\x1b[0m`);
     void bumpVersion(options);
   });
 
