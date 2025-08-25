@@ -1,12 +1,13 @@
 import { getBranchData, getThereAreUncommittedChanges, localTagsPromise } from './git';
 import { getPkgToWork, getNewVersion, getReleaseData, setNewVersion } from './pkg';
 
-const bumpVersion = async (options: { dryRun: boolean; branch: string | undefined; commitMsgTemplate: string | undefined; ignoreGitChanges: boolean }) => {
+const bumpVersion = async (options: { dryRun: boolean; branch?: string; commitMsgTemplate?: string; ignoreGitChanges: boolean; preid?: string }) => {
   const thereAreUncommittedChanges = await getThereAreUncommittedChanges();
   if (!options.ignoreGitChanges && thereAreUncommittedChanges) throw new Error('There are uncommitted changes in the repository. Please commit or stash them before proceeding.');
   const pkg = await getPkgToWork();
   const branchData = await getBranchData(options.branch);
   const releaseData = await getReleaseData(branchData);
+  if (options.preid !== undefined) releaseData.preid = options.preid;
   const newVersionData = await getNewVersion(pkg, releaseData.releaseType, releaseData.preid, options.commitMsgTemplate);
 
   if (!options.dryRun) {
