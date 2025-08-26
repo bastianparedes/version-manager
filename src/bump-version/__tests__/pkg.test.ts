@@ -108,7 +108,12 @@ describe('version helpers', () => {
     it('should calculate a new version and tag', async () => {
       incMock.mockReturnValue('1.0.1');
       const { getNewVersion } = await import('../pkg');
-      const result = await getNewVersion({ name: 'root', version: '1.0.0', path: '/root', jsonPath: '', isMonoRepo: false }, 'patch', undefined, undefined);
+      const result = await getNewVersion({
+        pkg: { name: 'root', version: '1.0.0', path: '/root', jsonPath: '', isMonoRepo: false },
+        releaseType: 'patch',
+        preid: undefined,
+        commitMsgTemplate: undefined
+      });
       expect(result.version).toBe('1.0.1');
       expect(result.tag).toBe('v1.0.1');
     });
@@ -116,7 +121,12 @@ describe('version helpers', () => {
     it('should calculate a new version and tag for monorepo', async () => {
       incMock.mockReturnValue('0.1.1');
       const { getNewVersion } = await import('../pkg');
-      const result = await getNewVersion({ name: 'sub', version: '0.1.0', path: '/sub', jsonPath: '/sub/package.json', isMonoRepo: true }, 'patch', undefined, undefined);
+      const result = await getNewVersion({
+        pkg: { name: 'sub', version: '0.1.0', path: '/sub', jsonPath: '/sub/package.json', isMonoRepo: true },
+        releaseType: 'patch',
+        preid: undefined,
+        commitMsgTemplate: undefined
+      });
       expect(result.version).toBe('0.1.1');
       expect(result.tag).toBe('sub@0.1.1');
     });
@@ -124,9 +134,14 @@ describe('version helpers', () => {
     it('should throw if inc returns null', async () => {
       incMock.mockReturnValue(null);
       const { getNewVersion } = await import('../pkg');
-      await expect(getNewVersion({ name: 'root', version: '1.0.0', path: '/root', jsonPath: '', isMonoRepo: false }, 'patch', undefined, undefined)).rejects.toThrow(
-        'New version could not be calculated'
-      );
+      await expect(
+        getNewVersion({
+          pkg: { name: 'root', version: '1.0.0', path: '/root', jsonPath: '', isMonoRepo: false },
+          releaseType: 'patch',
+          preid: undefined,
+          commitMsgTemplate: undefined
+        })
+      ).rejects.toThrow('New version could not be calculated');
     });
   });
 
@@ -164,7 +179,7 @@ describe('version helpers', () => {
   describe('setNewVersion', () => {
     it('should remove local tag and commit if needed', async () => {
       const { setNewVersion } = await import('../pkg');
-      await setNewVersion('1.0.1', 'v1.0.1', { path: '/root', isMonoRepo: false, jsonPath: '', name: '', version: '' }, ['v1.0.1'], true);
+      await setNewVersion({ version: '1.0.1', tag: 'v1.0.1', pkg: { path: '/root', isMonoRepo: false, jsonPath: '', name: '', version: '' }, localTags: ['v1.0.1'], commit: true });
 
       expect(removeLocalTagMock).toHaveBeenCalledWith('v1.0.1');
       expect(execaMock).toHaveBeenCalledWith('npm', ['version', '1.0.1', '--no-git-tag-version'], { cwd: '/root' });
@@ -175,7 +190,7 @@ describe('version helpers', () => {
 
     it('should skip commit if commit flag is false', async () => {
       const { setNewVersion } = await import('../pkg');
-      await setNewVersion('1.0.1', 'v1.0.1', { path: '/root', isMonoRepo: false, jsonPath: '', name: '', version: '' }, [], false);
+      await setNewVersion({ version: '1.0.1', tag: 'v1.0.1', pkg: { path: '/root', isMonoRepo: false, jsonPath: '', name: '', version: '' }, localTags: [], commit: false });
 
       expect(git.add).not.toHaveBeenCalled();
       expect(git.commit).not.toHaveBeenCalled();

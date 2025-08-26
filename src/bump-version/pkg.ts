@@ -42,7 +42,7 @@ export const getPkgToWork = async () => {
   return repositoryData.rootPkg;
 };
 
-export const getNewVersion = async (pkg: PkgType, releaseType: ReleaseType, preid: string | undefined, commitMsgTemplate: string | undefined) => {
+export const getNewVersion = async ({ pkg, releaseType, preid, commitMsgTemplate }: { pkg: PkgType; releaseType: ReleaseType; preid: string | undefined; commitMsgTemplate: string | undefined }) => {
   const publishedVersions = await getPublishedVersions(pkg.name);
   const remoteTags = await getRemoteTags();
 
@@ -97,7 +97,7 @@ export const getReleaseData = async (branch: { isProduction: boolean; isUat: boo
   };
 };
 
-export const setNewVersion = async (version: string, tag: string, pkg: PkgType, localTags: string[], commit: boolean) => {
+export const setNewVersion = async ({ version, tag, pkg, localTags, commit }: { version: string; tag: string; pkg: PkgType; localTags: string[]; commit: boolean }) => {
   if (localTags.includes(tag)) {
     await removeLocalTag(tag);
   }

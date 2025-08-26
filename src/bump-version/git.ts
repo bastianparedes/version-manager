@@ -3,7 +3,7 @@ import { git } from './variables';
 export const getBranchData = async (initialName: string | undefined) => {
   const branch = await git.branch();
   const name = initialName || branch.current;
-  const isProduction = ['main', 'master'].includes(name);
+  const isProduction = ['main', 'master', 'release'].includes(name);
   const isUat = ['uat'].includes(name);
   const isDevelop = ['develop'].includes(name);
   const isCustom = !isProduction && !isUat && !isDevelop;

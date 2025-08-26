@@ -61,7 +61,19 @@ describe('bumpVersion', () => {
     expect(getBranchData).toHaveBeenCalledWith('main');
     expect(getReleaseData).toHaveBeenCalled();
     expect(getNewVersion).toHaveBeenCalled();
-    expect(setNewVersion).toHaveBeenCalledWith('1.0.1', 'v1.0.1', expect.any(Object), ['v1.0.0'], true);
+    expect(setNewVersion).toHaveBeenCalledWith({
+      version: '1.0.1',
+      tag: 'v1.0.1',
+      pkg: {
+        isMonoRepo: false,
+        jsonPath: '',
+        name: 'pkg-a',
+        path: '/repo/pkg-a',
+        version: '1.0.0'
+      },
+      localTags: ['v1.0.0'],
+      commit: true
+    });
   });
 
   it('does not set version when dryRun is true', async () => {
@@ -79,7 +91,18 @@ describe('bumpVersion', () => {
 
     await bumpVersion({ dryRun: false, branch: 'main', commitMsgTemplate: undefined, gitCheck: true, preid: 'beta', commit: true });
 
-    expect(getNewVersion).toHaveBeenCalledWith(expect.any(Object), 'patch', 'beta', undefined);
+    expect(getNewVersion).toHaveBeenCalledWith({
+      commitMsgTemplate: undefined,
+      pkg: {
+        isMonoRepo: false,
+        jsonPath: '',
+        name: 'pkg-a',
+        path: '/repo/pkg-a',
+        version: '1.0.0'
+      },
+      preid: 'beta',
+      releaseType: 'patch'
+    });
   });
 
   it('logs correct message when commit is false', async () => {

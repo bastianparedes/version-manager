@@ -9,10 +9,9 @@ const bumpVersion = async (options: { dryRun: boolean; branch?: string; commitMs
   const branchData = await getBranchData(options.branch);
   const releaseData = await getReleaseData(branchData);
   if (options.preid !== undefined) releaseData.preid = options.preid;
-  const newVersionData = await getNewVersion(pkg, releaseData.releaseType, releaseData.preid, options.commitMsgTemplate);
-
+  const newVersionData = await getNewVersion({ pkg, releaseType: releaseData.releaseType, preid: releaseData.preid, commitMsgTemplate: options.commitMsgTemplate });
   const localTags = await getLocalTags();
-  if (!options.dryRun) await setNewVersion(newVersionData.version, newVersionData.tag, pkg, localTags, options.commit);
+  if (!options.dryRun) await setNewVersion({ version: newVersionData.version, tag: newVersionData.tag, pkg, localTags, commit: options.commit });
 
   if (options.commit)
     console.log(
