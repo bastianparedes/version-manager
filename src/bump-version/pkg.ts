@@ -1,61 +1,9 @@
-import path from 'path';
-import type { PackageJson } from 'type-fest';
 import prompts from 'prompts';
 import { inc, type ReleaseType } from 'semver';
-import { git, remoteTagsPromise, removeLocalTag } from './git';
+import { removeLocalTag } from './git';
 import { execa } from 'execa';
 import { getFilledTemplate } from '../utils/template';
-import fs from 'fs/promises';
-import { glob } from 'glob';
-
-const repositoryDataPromise = (async () => {
-  const rootDir = process.cwd();
-  const rootPkgPath = path.join(rootDir, 'package.json');
-  const rootPkgJson: PackageJson = JSON.parse(await fs.readFile(rootPkgPath, 'utf-8'));
-  const workspaces = (rootPkgJson.workspaces || []) as string[];
-
-  const packagePaths = new Set<string>();
-  for (const pattern of workspaces) {
-    const matches = await glob(pattern, { cwd: rootDir, absolute: true });
-    for (const match of matches) {
-      if (
-        await fs.stat(path.join(match, 'package.json')).then(
-          () => true,
-          () => false
-        )
-      ) {
-        packagePaths.add(match);
-      }
-    }
-  }
-
-  const subPkgs = [];
-  for (const pkgPath of packagePaths) {
-    const pkgJson: PackageJson = JSON.parse(await fs.readFile(path.join(pkgPath, 'package.json'), 'utf-8'));
-    subPkgs.push({
-      path: pkgPath,
-      jsonPath: path.resolve(pkgPath, 'package.json'),
-      name: pkgJson.name as string,
-      version: pkgJson.version as string,
-      isMonoRepo: true
-    });
-  }
-
-  const rootPkg = {
-    path: rootDir,
-    jsonPath: rootPkgPath,
-    name: rootPkgJson.name as string,
-    version: rootPkgJson.version as string,
-    isMonoRepo: subPkgs.length > 0
-  };
-
-  return {
-    allPkgs: [rootPkg, ...subPkgs],
-    rootPkg,
-    subPkgs,
-    isMonoRepo: subPkgs.length > 0
-  };
-})();
+import { git, getRemoteTags, getRepositoryData } from './variables';
 
 type PkgType = {
   isMonoRepo: boolean;
@@ -75,16 +23,8 @@ export const getPublishedVersions = async (packageName: string) => {
   }
 };
 
-export const getPkg = async (name: string) => {
-  const repositoryData = await repositoryDataPromise;
-  const requiredPkg = repositoryData.allPkgs.find((pkg) => pkg.name === name);
-  if (!requiredPkg) throw new Error(`package.json not found for project ${name}`);
-
-  return requiredPkg;
-};
-
 export const getPkgToWork = async () => {
-  const repositoryData = await repositoryDataPromise;
+  const repositoryData = await getRepositoryData();
   if (repositoryData.isMonoRepo) {
     const { subPkgName }: { subPkgName: string } = await prompts({
       type: 'select',
@@ -95,18 +35,16 @@ export const getPkgToWork = async () => {
         value: pkg.name
       }))
     });
-    return {
-      ...(await getPkg(subPkgName))
-    };
+    const subPkg = repositoryData.subPkgs.find((pkg) => pkg.name === subPkgName);
+    if (!subPkg) throw new Error('Failed to fetch the published versions. This may be because the package does not exist on npm, the .npmrc is not configured, or another unknown issue occurred.');
+    return subPkg;
   }
-  return {
-    ...(await getPkg(repositoryData.rootPkg.name))
-  };
+  return repositoryData.rootPkg;
 };
 
 export const getNewVersion = async (pkg: PkgType, releaseType: ReleaseType, preid: string | undefined, commitMsgTemplate: string | undefined) => {
   const publishedVersions = await getPublishedVersions(pkg.name);
-  const remoteTags = await remoteTagsPromise;
+  const remoteTags = await getRemoteTags();
 
   const defaultTemplate = pkg.isMonoRepo ? `{package_name}@{package_version}` : `v{package_version}`;
   const correctedTemplate = commitMsgTemplate || defaultTemplate;
@@ -159,12 +97,14 @@ export const getReleaseData = async (branch: { isProduction: boolean; isUat: boo
   };
 };
 
-export const setNewVersion = async (version: string, tag: string, pkg: PkgType, localTags: string[]) => {
+export const setNewVersion = async (version: string, tag: string, pkg: PkgType, localTags: string[], commit: boolean) => {
   if (localTags.includes(tag)) {
     await removeLocalTag(tag);
   }
   await execa('npm', ['version', version, '--no-git-tag-version'], { cwd: pkg.path });
-  await git.add(['.']);
-  await git.commit(tag);
-  await git.addTag(tag);
+  if (commit) {
+    await git.add(['.']);
+    await git.commit(tag);
+    await git.addTag(tag);
+  }
 };

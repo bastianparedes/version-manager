@@ -1,6 +1,4 @@
-import simpleGit from 'simple-git';
-
-export const git = simpleGit(process.cwd());
+import { git } from './variables';
 
 export const getBranchData = async (initialName: string | undefined) => {
   const branch = await git.branch();
@@ -18,24 +16,6 @@ export const getBranchData = async (initialName: string | undefined) => {
     isCustom
   };
 };
-
-export const localTagsPromise = (async () => {
-  return (await git.tags()).all;
-})();
-
-export const remoteTagsPromise = (async () => {
-  const tags = await git.listRemote(['--tags', 'origin']);
-  const tagList = tags
-    .split('\n')
-    .map((line) => line.trim())
-    .filter((line) => line)
-    .map((line) => {
-      const match = line.match(/refs\/tags\/(.+)$/);
-      return match?.[1];
-    })
-    .filter(Boolean);
-  return tagList;
-})();
 
 export const removeLocalTag = async (tag: string) => {
   await git.tag(['-d', tag]);

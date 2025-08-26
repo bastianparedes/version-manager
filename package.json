@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc && rimraf ./dist && node ./esbuild.config.js",
     "bump-version": "npm run build && node ./dist/index.cjs bump-version",
-    "bump-version:dry-run": "npm run build && node ./dist/index.cjs bump-version --dry-run --ignore-git-changes --branch=\"develop\" --preid=\"alpha\"",
+    "bump-version:dry-run": "npm run build && node ./dist/index.cjs bump-version --dry-run --no-git-check --branch=\"develop\" --preid=\"alpha\"",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "vitest",

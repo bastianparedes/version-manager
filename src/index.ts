@@ -9,9 +9,11 @@ program.name(packageJson.name).description(packageJson.description).version(pack
 program
   .command('bump-version')
   .description('Bump the package version and create a Git tag')
-  .option('--dry-run', 'Simulate the actions without making any changes', false)
-  .option('--branch <branch>', 'Name of the branch', undefined)
-  .option('--preid <preid>', 'Preid for the version', undefined)
+  .option('--dry-run', 'Simulate the actions without making any changes')
+  .option('--no-commit', 'No commit or tag will be created')
+  .option('--no-git-check', 'Ignore uncommitted changes')
+  .option('--branch <branch>', 'Name of the branch')
+  .option('--preid <preid>', 'Preid for the version')
   .option(
     '--commit-msg-template <template>',
     `Template for commit message and tag name.
@@ -20,8 +22,7 @@ program
       {package_name} - name of the package
       {package_version} - version of the package`
   )
-  .option('--ignore-git-changes', 'Ignore uncommitted changes', false)
-  .action((options: { dryRun: boolean; branch: string | undefined; commitMsgTemplate: string | undefined; ignoreGitChanges: boolean; preid: string | undefined }) => {
+  .action((options: { dryRun: boolean; branch: string | undefined; commitMsgTemplate: string | undefined; gitCheck: boolean; preid: string | undefined; commit: boolean }) => {
     console.log(`Runing \x1b[4m\x1b[92m${packageJson.name}\x1b[0m version \x1b[4m\x1b[92m${packageJson.version}\x1b[0m`);
     void bumpVersion(options);
   });
