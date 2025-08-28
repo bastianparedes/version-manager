@@ -1,15 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-const git = {
-  add: vi.fn(),
-  commit: vi.fn(),
-  addTag: vi.fn(),
-  tag: vi.fn()
-};
 const getRemoteTags = vi.fn();
 const getRepositoryData = vi.fn();
 vi.mock('../variables', () => ({
-  git,
   getRemoteTags,
   getRepositoryData
 }));
@@ -24,19 +17,26 @@ vi.mock('execa', () => ({
   execa: execaMock
 }));
 
-const getFilledTemplate = vi.fn();
-vi.mock('../utils/template', () => ({
-  getFilledTemplate
-}));
-
 const incMock = vi.fn();
 vi.mock('semver', () => ({
   inc: incMock
 }));
 
-const removeLocalTagMock = vi.fn();
+const git = {
+  add: vi.fn(),
+  addAll: vi.fn(),
+  commit: vi.fn(),
+  push: vi.fn(),
+  pushTag: vi.fn(),
+  getLocalTags: vi.fn(),
+  tag: vi.fn(),
+  removeTag: vi.fn(),
+  getRemoteTags: vi.fn(),
+  getBranchData: vi.fn(),
+  getThereAreUncommittedChanges: vi.fn()
+};
 vi.mock('../git', () => ({
-  removeLocalTag: removeLocalTagMock
+  default: git
 }));
 
 describe('version helpers', () => {
@@ -45,9 +45,6 @@ describe('version helpers', () => {
     vi.resetAllMocks();
     promptsMock.mockReturnValue({ releaseType: 'major', subPkgName: 'root' });
     execaMock.mockReturnValue({ stdout: JSON.stringify(['1.0.0']) });
-    git.add.mockReturnValue(undefined);
-    git.commit.mockReturnValue(undefined);
-    git.addTag.mockReturnValue(undefined);
     getRemoteTags.mockReturnValue([]);
     getRepositoryData.mockReturnValue({
       isMonoRepo: true,
@@ -58,7 +55,6 @@ describe('version helpers', () => {
       ],
       subPkgs: [{ name: 'sub', version: '0.1.0', path: '/sub', jsonPath: '/sub/package.json', isMonoRepo: true }]
     });
-    getFilledTemplate.mockImplementation((_template, { package_version }) => `v${package_version}`);
     incMock.mockReturnValue('0.1.1');
   });
 
@@ -179,22 +175,37 @@ describe('version helpers', () => {
   describe('setNewVersion', () => {
     it('should remove local tag and commit if needed', async () => {
       const { setNewVersion } = await import('../pkg');
-      await setNewVersion({ version: '1.0.1', tag: 'v1.0.1', pkg: { path: '/root', isMonoRepo: false, jsonPath: '', name: '', version: '' }, localTags: ['v1.0.1'], commit: true });
+      await setNewVersion({ version: '1.0.1', tag: 'v1.0.1', pkg: { path: '/root', isMonoRepo: false, jsonPath: '', name: '', version: '' }, localTags: ['v1.0.1'], commit: true, push: false });
 
-      expect(removeLocalTagMock).toHaveBeenCalledWith('v1.0.1');
+      expect(git.removeTag).toHaveBeenCalledWith('v1.0.1');
       expect(execaMock).toHaveBeenCalledWith('npm', ['version', '1.0.1', '--no-git-tag-version'], { cwd: '/root' });
-      expect(git.add).toHaveBeenCalledWith(['.']);
+      expect(git.addAll).toHaveBeenCalled();
       expect(git.commit).toHaveBeenCalledWith('v1.0.1');
-      expect(git.addTag).toHaveBeenCalledWith('v1.0.1');
+      expect(git.tag).toHaveBeenCalledWith('v1.0.1');
     });
 
     it('should skip commit if commit flag is false', async () => {
       const { setNewVersion } = await import('../pkg');
-      await setNewVersion({ version: '1.0.1', tag: 'v1.0.1', pkg: { path: '/root', isMonoRepo: false, jsonPath: '', name: '', version: '' }, localTags: [], commit: false });
+      await setNewVersion({ version: '1.0.1', tag: 'v1.0.1', pkg: { path: '/root', isMonoRepo: false, jsonPath: '', name: '', version: '' }, localTags: [], commit: false, push: false });
 
-      expect(git.add).not.toHaveBeenCalled();
+      expect(git.addAll).not.toHaveBeenCalled();
       expect(git.commit).not.toHaveBeenCalled();
-      expect(git.addTag).not.toHaveBeenCalled();
+      expect(git.tag).not.toHaveBeenCalled();
+    });
+
+    it('should push and pushTag when push is true', async () => {
+      const { setNewVersion } = await import('../pkg');
+      await setNewVersion({
+        version: '1.0.1',
+        tag: 'v1.0.1',
+        pkg: { path: '/root', isMonoRepo: false, jsonPath: '', name: '', version: '' },
+        localTags: [],
+        commit: true,
+        push: true
+      });
+
+      expect(git.push).toHaveBeenCalled();
+      expect(git.pushTag).toHaveBeenCalledWith('v1.0.1');
     });
   });
 });

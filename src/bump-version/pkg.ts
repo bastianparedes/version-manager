@@ -1,9 +1,9 @@
 import prompts from 'prompts';
 import { inc, type ReleaseType } from 'semver';
-import { removeLocalTag } from './git';
 import { execa } from 'execa';
 import { getFilledTemplate } from '../utils/template';
-import { git, getRemoteTags, getRepositoryData } from './variables';
+import { getRemoteTags, getRepositoryData } from './variables';
+import git from './git';
 
 type PkgType = {
   isMonoRepo: boolean;
@@ -97,14 +97,18 @@ export const getReleaseData = async (branch: { isProduction: boolean; isUat: boo
   };
 };
 
-export const setNewVersion = async ({ version, tag, pkg, localTags, commit }: { version: string; tag: string; pkg: PkgType; localTags: string[]; commit: boolean }) => {
+export const setNewVersion = async ({ version, tag, pkg, localTags, commit, push }: { version: string; tag: string; pkg: PkgType; localTags: string[]; commit: boolean; push: boolean }) => {
   if (localTags.includes(tag)) {
-    await removeLocalTag(tag);
+    await git.removeTag(tag);
   }
   await execa('npm', ['version', version, '--no-git-tag-version'], { cwd: pkg.path });
   if (commit) {
-    await git.add(['.']);
+    await git.addAll();
     await git.commit(tag);
-    await git.addTag(tag);
+    await git.tag(tag);
+    if (push) {
+      await git.push();
+      await git.pushTag(tag);
+    }
   }
 };

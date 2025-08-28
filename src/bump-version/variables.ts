@@ -1,33 +1,24 @@
-import simpleGit from 'simple-git';
 import fs from 'fs/promises';
 import { glob } from 'glob';
 import path from 'path';
 import { type PackageJson } from 'type-fest';
+import git from './git';
 
-export const git = simpleGit(process.cwd());
+export const localTagsPromise = git.getLocalTags();
+export const getLocalTags = () => localTagsPromise;
 
-const localTagsPromise = (async () => {
-  return (await git.tags()).all;
-})();
-export const getLocalTags = async () => await localTagsPromise;
-
-const remoteTagsPromise = (async () => {
-  const tags = await git.listRemote(['--tags', 'origin']);
-  const tagList = tags
-    .split('\n')
-    .map((line) => line.trim())
-    .filter((line) => line)
-    .map((line) => {
-      const match = line.match(/refs\/tags\/(.+)$/);
-      return match?.[1];
-    })
-    .filter((line) => line !== undefined)
-    .filter(Boolean);
-  return tagList;
-})();
-export const getRemoteTags = async () => await remoteTagsPromise;
+const remoteTagsPromise = git.getRemoteTags();
+export const getRemoteTags = async () => remoteTagsPromise;
 
 const repositoryDataPromise = (async () => {
+  type Pkg = {
+    path: string;
+    jsonPath: string;
+    name: string;
+    version: string;
+    isMonoRepo: boolean;
+  };
+
   const rootDir = process.cwd();
   const rootPkgPath = path.join(rootDir, 'package.json');
   const rootPkgJson: PackageJson = JSON.parse(await fs.readFile(rootPkgPath, 'utf-8'));
@@ -48,7 +39,7 @@ const repositoryDataPromise = (async () => {
     }
   }
 
-  const subPkgs = [];
+  const subPkgs: Pkg[] = [];
   for (const pkgPath of packagePaths) {
     const pkgJson: PackageJson = JSON.parse(await fs.readFile(path.join(pkgPath, 'package.json'), 'utf-8'));
     subPkgs.push({
@@ -60,7 +51,7 @@ const repositoryDataPromise = (async () => {
     });
   }
 
-  const rootPkg = {
+  const rootPkg: Pkg = {
     path: rootDir,
     jsonPath: rootPkgPath,
     name: rootPkgJson.name as string,

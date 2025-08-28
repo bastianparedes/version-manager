@@ -1,13 +1,21 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import path from 'path';
 
-const tags = vi.fn();
-const listRemote = vi.fn();
-vi.mock('simple-git', () => ({
-  default: () => ({
-    tags,
-    listRemote
-  })
+const git = {
+  add: vi.fn(),
+  addAll: vi.fn(),
+  commit: vi.fn(),
+  push: vi.fn(),
+  pushTag: vi.fn(),
+  getLocalTags: vi.fn(),
+  tag: vi.fn(),
+  removeTag: vi.fn(),
+  getRemoteTags: vi.fn(),
+  getBranchData: vi.fn(),
+  getThereAreUncommittedChanges: vi.fn()
+};
+vi.mock('../git', () => ({
+  default: git
 }));
 
 const readFile = vi.fn();
@@ -28,9 +36,9 @@ describe('variables module', () => {
   beforeEach(() => {
     vi.resetModules();
     vi.clearAllMocks();
-    listRemote.mockResolvedValue(`abc123\trefs/tags/v1.0.0\nxyz789\trefs/tags/v1.0.1\ninvalid-line`);
-    tags.mockResolvedValue({ all: ['v1.0.0', 'v1.0.1'] });
-    readFile.mockResolvedValue(
+    git.getLocalTags.mockReturnValue(['v1.0.0', 'v1.0.1']);
+    git.getRemoteTags.mockReturnValue(['v1.0.0', 'v1.0.1']);
+    readFile.mockReturnValue(
       JSON.stringify({
         name: 'root',
         version: '1.0.0',
@@ -40,21 +48,19 @@ describe('variables module', () => {
   });
 
   it('returns local tags', async () => {
-    tags.mockResolvedValue({ all: ['v1.0.0', 'v1.0.1'] });
+    git.getLocalTags.mockReturnValue(['v1.0.0', 'v1.0.1']);
     const { getLocalTags } = await import('../variables');
 
     const result = await getLocalTags();
     expect(result).toEqual(['v1.0.0', 'v1.0.1']);
-    expect(tags).toHaveBeenCalled();
   });
 
   it('returns remote tags parsed from listRemote', async () => {
-    listRemote.mockResolvedValue(`abc123\trefs/tags/v1.0.0\nxyz789\trefs/tags/v1.0.1\ninvalid-line`);
+    git.getRemoteTags.mockReturnValue(['v1.0.0', 'v1.0.1']);
     const { getRemoteTags } = await import('../variables');
 
     const result = await getRemoteTags();
     expect(result).toEqual(['v1.0.0', 'v1.0.1']);
-    expect(listRemote).toHaveBeenCalledWith(['--tags', 'origin']);
   });
 
   it('returns repository data for single repo (no workspaces)', async () => {
@@ -93,7 +99,7 @@ describe('variables module', () => {
       throw new Error('File not found');
     });
 
-    globMock.mockResolvedValue([pkgAPath]);
+    globMock.mockReturnValue([pkgAPath]);
     stat.mockResolvedValue(true);
 
     const { getRepositoryData } = await import('../variables');
