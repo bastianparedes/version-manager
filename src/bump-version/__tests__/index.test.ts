@@ -11,7 +11,7 @@ const git = {
   removeTag: vi.fn(),
   getRemoteTags: vi.fn(),
   getBranchData: vi.fn(),
-  getThereAreUncommittedChanges: vi.fn()
+  getThereAreUncommittedChanges: vi.fn(),
 };
 vi.mock('../git', () => ({ default: git }));
 
@@ -23,7 +23,7 @@ vi.mock('../pkg', () => ({
   getPkgToWork,
   getReleaseData,
   getNewVersion,
-  setNewVersion
+  setNewVersion,
 }));
 
 const getLocalTags = vi.fn();
@@ -38,13 +38,13 @@ describe('bumpVersion', () => {
       version: '1.0.0',
       isMonoRepo: false,
       path: '/repo/pkg-a',
-      jsonPath: ''
+      jsonPath: '',
     });
 
     git.getBranchData.mockReturnValue({
       isProduction: true,
       isUat: false,
-      isDevelop: false
+      isDevelop: false,
     });
 
     getLocalTags.mockReturnValue(['v1.0.0']);
@@ -64,9 +64,11 @@ describe('bumpVersion', () => {
         gitCheck: true,
         commit: true,
         json: false,
-        push: false
-      })
-    ).rejects.toThrowError('There are uncommitted changes in the repository. Please commit or stash them before proceeding.');
+        push: false,
+      }),
+    ).rejects.toThrowError(
+      'There are uncommitted changes in the repository. Please commit or stash them before proceeding.',
+    );
   });
 
   it('executes full flow when there are no uncommitted changes', async () => {
@@ -80,7 +82,7 @@ describe('bumpVersion', () => {
       gitCheck: true,
       commit: true,
       json: false,
-      push: false
+      push: false,
     });
 
     expect(getPkgToWork).toHaveBeenCalled();
@@ -96,10 +98,10 @@ describe('bumpVersion', () => {
         jsonPath: '',
         name: 'pkg-a',
         path: '/repo/pkg-a',
-        version: '1.0.0'
+        version: '1.0.0',
       },
       localTags: ['v1.0.0'],
-      commit: true
+      commit: true,
     });
   });
 
@@ -114,7 +116,7 @@ describe('bumpVersion', () => {
       gitCheck: true,
       commit: true,
       json: false,
-      push: false
+      push: false,
     });
 
     expect(setNewVersion).not.toHaveBeenCalled();
@@ -132,7 +134,7 @@ describe('bumpVersion', () => {
       preid: 'beta',
       commit: true,
       json: false,
-      push: false
+      push: false,
     });
 
     expect(getNewVersion).toHaveBeenCalledWith({
@@ -142,10 +144,10 @@ describe('bumpVersion', () => {
         jsonPath: '',
         name: 'pkg-a',
         path: '/repo/pkg-a',
-        version: '1.0.0'
+        version: '1.0.0',
       },
       preid: 'beta',
-      releaseType: 'patch'
+      releaseType: 'patch',
     });
   });
 
@@ -161,13 +163,13 @@ describe('bumpVersion', () => {
       gitCheck: true,
       commit: false,
       json: false,
-      push: false
+      push: false,
     });
 
     expect(consoleSpy).toHaveBeenCalledWith(
       expect.stringContaining('ℹ️ No commit or tag was created (--no-commit enabled).\n') &&
         expect.stringContaining('📦 The version was set to 1.0.1.\n') &&
-        expect.stringContaining('🚀 You can review the changes and commit/tag manually if needed.')
+        expect.stringContaining('🚀 You can review the changes and commit/tag manually if needed.'),
     );
 
     consoleSpy.mockRestore();
@@ -185,18 +187,18 @@ describe('bumpVersion', () => {
       gitCheck: true,
       commit: true,
       json: true,
-      push: false
+      push: false,
     });
 
     expect(consoleSpy).toHaveBeenCalledWith(
       JSON.stringify(
         {
           version: '1.0.1',
-          tag: 'v1.0.1'
+          tag: 'v1.0.1',
         },
         null,
-        2
-      )
+        2,
+      ),
     );
 
     expect(setNewVersion).toHaveBeenCalled();

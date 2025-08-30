@@ -19,7 +19,9 @@ export const getPublishedVersions = async (packageName: string) => {
     const versions: string[] = JSON.parse(stdout);
     return versions;
   } catch {
-    throw new Error('Failed to fetch the published versions. This may be because the package does not exist on npm, the .npmrc is not configured, or another unknown issue occurred.');
+    throw new Error(
+      'Failed to fetch the published versions. This may be because the package does not exist on npm, the .npmrc is not configured, or another unknown issue occurred.',
+    );
   }
 };
 
@@ -32,17 +34,30 @@ export const getPkgToWork = async () => {
       message: 'Choose the package whose version you want to modify:',
       choices: repositoryData.subPkgs.map((pkg) => ({
         title: pkg.name,
-        value: pkg.name
-      }))
+        value: pkg.name,
+      })),
     });
     const subPkg = repositoryData.subPkgs.find((pkg) => pkg.name === subPkgName);
-    if (!subPkg) throw new Error('Failed to fetch the published versions. This may be because the package does not exist on npm, the .npmrc is not configured, or another unknown issue occurred.');
+    if (!subPkg)
+      throw new Error(
+        'Failed to fetch the published versions. This may be because the package does not exist on npm, the .npmrc is not configured, or another unknown issue occurred.',
+      );
     return subPkg;
   }
   return repositoryData.rootPkg;
 };
 
-export const getNewVersion = async ({ pkg, releaseType, preid, commitMsgTemplate }: { pkg: PkgType; releaseType: ReleaseType; preid: string | undefined; commitMsgTemplate: string | undefined }) => {
+export const getNewVersion = async ({
+  pkg,
+  releaseType,
+  preid,
+  commitMsgTemplate,
+}: {
+  pkg: PkgType;
+  releaseType: ReleaseType;
+  preid: string | undefined;
+  commitMsgTemplate: string | undefined;
+}) => {
   const publishedVersions = await getPublishedVersions(pkg.name);
   const remoteTags = await getRemoteTags();
 
@@ -56,7 +71,7 @@ export const getNewVersion = async ({ pkg, releaseType, preid, commitMsgTemplate
     newVersion = calculatedNewVersion;
     const tag = getFilledTemplate(correctedTemplate, {
       package_name: pkg.name,
-      package_version: newVersion
+      package_version: newVersion,
     });
 
     const verionIsAlreadyPublished = publishedVersions.includes(newVersion);
@@ -64,27 +79,34 @@ export const getNewVersion = async ({ pkg, releaseType, preid, commitMsgTemplate
     if (!tagExists && !verionIsAlreadyPublished)
       return {
         version: newVersion,
-        tag
+        tag,
       };
   }
 };
 
 export const getReleaseData = async (branch: { isProduction: boolean; isUat: boolean; isDevelop: boolean }) => {
-  const { releaseType }: { releaseType: 'major' | 'minor' | 'patch' | 'premajor' | 'preminor' | 'prepatch' } = await prompts({
-    type: 'select',
-    name: 'releaseType',
-    message: 'Which one describes better your changes?',
-    choices: [
-      { title: 'Your changes are breaking changes', value: branch.isProduction ? 'major' : 'premajor' },
-      { title: 'Your changes do not break anything, but they add a new feature', value: branch.isProduction ? 'minor' : 'preminor' },
-      { title: 'Your changes do not add a new feature, but they fix something', value: branch.isProduction ? 'patch' : 'prepatch' }
-    ]
-  });
+  const { releaseType }: { releaseType: 'major' | 'minor' | 'patch' | 'premajor' | 'preminor' | 'prepatch' } =
+    await prompts({
+      type: 'select',
+      name: 'releaseType',
+      message: 'Which one describes better your changes?',
+      choices: [
+        { title: 'Your changes are breaking changes', value: branch.isProduction ? 'major' : 'premajor' },
+        {
+          title: 'Your changes do not break anything, but they add a new feature',
+          value: branch.isProduction ? 'minor' : 'preminor',
+        },
+        {
+          title: 'Your changes do not add a new feature, but they fix something',
+          value: branch.isProduction ? 'patch' : 'prepatch',
+        },
+      ],
+    });
 
   const preids = {
     main: undefined,
     uat: 'rc',
-    develop: 'beta'
+    develop: 'beta',
   };
 
   if (branch.isProduction) return { releaseType, preid: preids.main };
@@ -93,11 +115,25 @@ export const getReleaseData = async (branch: { isProduction: boolean; isUat: boo
 
   return {
     releaseType,
-    preid: 'alpha'
+    preid: 'alpha',
   };
 };
 
-export const setNewVersion = async ({ version, tag, pkg, localTags, commit, push }: { version: string; tag: string; pkg: PkgType; localTags: string[]; commit: boolean; push: boolean }) => {
+export const setNewVersion = async ({
+  version,
+  tag,
+  pkg,
+  localTags,
+  commit,
+  push,
+}: {
+  version: string;
+  tag: string;
+  pkg: PkgType;
+  localTags: string[];
+  commit: boolean;
+  push: boolean;
+}) => {
   if (localTags.includes(tag)) {
     await git.removeTag(tag);
   }

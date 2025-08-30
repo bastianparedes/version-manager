@@ -18,10 +18,7 @@ build({
   format: 'cjs',
   outfile: 'dist/index.cjs',
   banner: {
-    js: '#!/usr/bin/env node'
+    js: '#!/usr/bin/env node',
   },
-  external: [
-    'fs', 'path', 'os', 'crypto', 'util', 'stream',
-    ...Object.keys(pkg.peerDependencies || {})
-  ],
+  external: ['fs', 'path', 'os', 'crypto', 'util', 'stream', ...Object.keys(pkg.peerDependencies || {})],
 }).catch(() => process.exit(1));

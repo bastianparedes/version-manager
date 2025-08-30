@@ -4,22 +4,22 @@ const getRemoteTags = vi.fn();
 const getRepositoryData = vi.fn();
 vi.mock('../variables', () => ({
   getRemoteTags,
-  getRepositoryData
+  getRepositoryData,
 }));
 
 const promptsMock = vi.fn();
 vi.mock('prompts', () => ({
-  default: promptsMock
+  default: promptsMock,
 }));
 
 const execaMock = vi.fn();
 vi.mock('execa', () => ({
-  execa: execaMock
+  execa: execaMock,
 }));
 
 const incMock = vi.fn();
 vi.mock('semver', () => ({
-  inc: incMock
+  inc: incMock,
 }));
 
 const git = {
@@ -33,10 +33,10 @@ const git = {
   removeTag: vi.fn(),
   getRemoteTags: vi.fn(),
   getBranchData: vi.fn(),
-  getThereAreUncommittedChanges: vi.fn()
+  getThereAreUncommittedChanges: vi.fn(),
 };
 vi.mock('../git', () => ({
-  default: git
+  default: git,
 }));
 
 describe('version helpers', () => {
@@ -51,9 +51,9 @@ describe('version helpers', () => {
       rootPkg: { name: 'root', version: '1.0.0', path: '/root', jsonPath: '/root/package.json', isMonoRepo: true },
       allPkgs: [
         { name: 'root', version: '1.0.0', path: '/root', jsonPath: '/root/package.json', isMonoRepo: true },
-        { name: 'sub', version: '0.1.0', path: '/sub', jsonPath: '/sub/package.json', isMonoRepo: true }
+        { name: 'sub', version: '0.1.0', path: '/sub', jsonPath: '/sub/package.json', isMonoRepo: true },
       ],
-      subPkgs: [{ name: 'sub', version: '0.1.0', path: '/sub', jsonPath: '/sub/package.json', isMonoRepo: true }]
+      subPkgs: [{ name: 'sub', version: '0.1.0', path: '/sub', jsonPath: '/sub/package.json', isMonoRepo: true }],
     });
     incMock.mockReturnValue('0.1.1');
   });
@@ -79,7 +79,7 @@ describe('version helpers', () => {
         isMonoRepo: false,
         rootPkg: { name: 'root', version: '1.0.0', path: '/root', jsonPath: '/root/package.json', isMonoRepo: false },
         allPkgs: [{ name: 'root', version: '1.0.0', path: '/root', jsonPath: '/root/package.json', isMonoRepo: false }],
-        subPkgs: []
+        subPkgs: [],
       });
       const { getPkgToWork } = await import('../pkg');
       const pkg = await getPkgToWork();
@@ -108,7 +108,7 @@ describe('version helpers', () => {
         pkg: { name: 'root', version: '1.0.0', path: '/root', jsonPath: '', isMonoRepo: false },
         releaseType: 'patch',
         preid: undefined,
-        commitMsgTemplate: undefined
+        commitMsgTemplate: undefined,
       });
       expect(result.version).toBe('1.0.1');
       expect(result.tag).toBe('v1.0.1');
@@ -121,7 +121,7 @@ describe('version helpers', () => {
         pkg: { name: 'sub', version: '0.1.0', path: '/sub', jsonPath: '/sub/package.json', isMonoRepo: true },
         releaseType: 'patch',
         preid: undefined,
-        commitMsgTemplate: undefined
+        commitMsgTemplate: undefined,
       });
       expect(result.version).toBe('0.1.1');
       expect(result.tag).toBe('sub@0.1.1');
@@ -135,8 +135,8 @@ describe('version helpers', () => {
           pkg: { name: 'root', version: '1.0.0', path: '/root', jsonPath: '', isMonoRepo: false },
           releaseType: 'patch',
           preid: undefined,
-          commitMsgTemplate: undefined
-        })
+          commitMsgTemplate: undefined,
+        }),
       ).rejects.toThrow('New version could not be calculated');
     });
   });
@@ -175,7 +175,14 @@ describe('version helpers', () => {
   describe('setNewVersion', () => {
     it('should remove local tag and commit if needed', async () => {
       const { setNewVersion } = await import('../pkg');
-      await setNewVersion({ version: '1.0.1', tag: 'v1.0.1', pkg: { path: '/root', isMonoRepo: false, jsonPath: '', name: '', version: '' }, localTags: ['v1.0.1'], commit: true, push: false });
+      await setNewVersion({
+        version: '1.0.1',
+        tag: 'v1.0.1',
+        pkg: { path: '/root', isMonoRepo: false, jsonPath: '', name: '', version: '' },
+        localTags: ['v1.0.1'],
+        commit: true,
+        push: false,
+      });
 
       expect(git.removeTag).toHaveBeenCalledWith('v1.0.1');
       expect(execaMock).toHaveBeenCalledWith('npm', ['version', '1.0.1', '--no-git-tag-version'], { cwd: '/root' });
@@ -186,7 +193,14 @@ describe('version helpers', () => {
 
     it('should skip commit if commit flag is false', async () => {
       const { setNewVersion } = await import('../pkg');
-      await setNewVersion({ version: '1.0.1', tag: 'v1.0.1', pkg: { path: '/root', isMonoRepo: false, jsonPath: '', name: '', version: '' }, localTags: [], commit: false, push: false });
+      await setNewVersion({
+        version: '1.0.1',
+        tag: 'v1.0.1',
+        pkg: { path: '/root', isMonoRepo: false, jsonPath: '', name: '', version: '' },
+        localTags: [],
+        commit: false,
+        push: false,
+      });
 
       expect(git.addAll).not.toHaveBeenCalled();
       expect(git.commit).not.toHaveBeenCalled();
@@ -201,7 +215,7 @@ describe('version helpers', () => {
         pkg: { path: '/root', isMonoRepo: false, jsonPath: '', name: '', version: '' },
         localTags: [],
         commit: true,
-        push: true
+        push: true,
       });
 
       expect(git.push).toHaveBeenCalled();

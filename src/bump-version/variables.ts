@@ -31,7 +31,7 @@ const repositoryDataPromise = (async () => {
       if (
         await fs.stat(path.join(match, 'package.json')).then(
           () => true,
-          () => false
+          () => false,
         )
       ) {
         packagePaths.add(match);
@@ -47,7 +47,7 @@ const repositoryDataPromise = (async () => {
       jsonPath: path.resolve(pkgPath, 'package.json'),
       name: pkgJson.name as string,
       version: pkgJson.version as string,
-      isMonoRepo: true
+      isMonoRepo: true,
     });
   }
 
@@ -56,14 +56,14 @@ const repositoryDataPromise = (async () => {
     jsonPath: rootPkgPath,
     name: rootPkgJson.name as string,
     version: rootPkgJson.version as string,
-    isMonoRepo: subPkgs.length > 0
+    isMonoRepo: subPkgs.length > 0,
   };
 
   return {
     allPkgs: [rootPkg, ...subPkgs],
     rootPkg,
     subPkgs,
-    isMonoRepo: subPkgs.length > 0
+    isMonoRepo: subPkgs.length > 0,
   };
 })();
 export const getRepositoryData = async () => await repositoryDataPromise;

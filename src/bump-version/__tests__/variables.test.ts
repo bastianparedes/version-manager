@@ -12,10 +12,10 @@ const git = {
   removeTag: vi.fn(),
   getRemoteTags: vi.fn(),
   getBranchData: vi.fn(),
-  getThereAreUncommittedChanges: vi.fn()
+  getThereAreUncommittedChanges: vi.fn(),
 };
 vi.mock('../git', () => ({
-  default: git
+  default: git,
 }));
 
 const readFile = vi.fn();
@@ -23,13 +23,13 @@ const stat = vi.fn();
 vi.mock('fs/promises', () => ({
   default: {
     readFile,
-    stat
-  }
+    stat,
+  },
 }));
 
 const globMock = vi.fn();
 vi.mock('glob', () => ({
-  glob: globMock
+  glob: globMock,
 }));
 
 describe('variables module', () => {
@@ -42,8 +42,8 @@ describe('variables module', () => {
       JSON.stringify({
         name: 'root',
         version: '1.0.0',
-        workspaces: []
-      })
+        workspaces: [],
+      }),
     );
   });
 
@@ -68,7 +68,7 @@ describe('variables module', () => {
       if (filePath.endsWith('package.json')) {
         return JSON.stringify({
           name: 'root',
-          version: '1.0.0'
+          version: '1.0.0',
         });
       }
       throw new Error('File not found');
@@ -93,7 +93,7 @@ describe('variables module', () => {
         return JSON.stringify({
           name: 'root',
           version: '1.0.0',
-          workspaces: ['packages/*']
+          workspaces: ['packages/*'],
         });
       }
       throw new Error('File not found');

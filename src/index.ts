@@ -23,10 +23,12 @@ program
       '  Example: {package_name}@{package_version}\n' +
       '  Available variables:\n' +
       '    {package_name} - name of the package\n' +
-      '    {package_version} - version of the package\n'
+      '    {package_version} - version of the package\n',
   )
   .action((options: BumpVersionOptions) => {
-    console.log(`Runing \x1b[4m\x1b[92m${packageJson.name}\x1b[0m version \x1b[4m\x1b[92m${packageJson.version}\x1b[0m`);
+    console.log(
+      `Runing \x1b[4m\x1b[92m${packageJson.name}\x1b[0m version \x1b[4m\x1b[92m${packageJson.version}\x1b[0m`,
+    );
     void bumpVersion(options);
   });
 

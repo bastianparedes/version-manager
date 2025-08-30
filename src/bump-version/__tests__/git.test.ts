@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 const execa = vi.fn();
 
 vi.mock('execa', () => ({
-  execa
+  execa,
 }));
 
 describe('git helpers', () => {
@@ -24,7 +24,7 @@ describe('git helpers', () => {
         isProduction: false,
         isUat: false,
         isDevelop: true,
-        isCustom: false
+        isCustom: false,
       });
     });
 
@@ -146,7 +146,7 @@ describe('git helpers', () => {
   describe('getRemoteTags', () => {
     it('should list remote tags', async () => {
       execa.mockReturnValue({
-        stdout: `abc123\trefs/tags/v1.0.0\nxyz456\trefs/tags/v1.1.0\n`
+        stdout: `abc123\trefs/tags/v1.0.0\nxyz456\trefs/tags/v1.1.0\n`,
       });
 
       const { default: git } = await import('../git');

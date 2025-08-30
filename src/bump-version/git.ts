@@ -40,7 +40,7 @@ export default {
       isProduction,
       isUat,
       isDevelop,
-      isCustom
+      isCustom,
     };
   },
 
@@ -48,5 +48,5 @@ export default {
     const { stdout } = await execa('git', ['status', '--porcelain']);
     const gitHasChanges = stdout.trim().length > 0;
     return gitHasChanges;
-  }
+  },
 };

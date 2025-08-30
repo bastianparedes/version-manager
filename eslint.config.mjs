@@ -1,52 +1,35 @@
-// @ts-check
-import eslint from '@eslint/js';
-import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
+import js from '@eslint/js';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
+import { defineConfig, globalIgnores } from 'eslint/config';
+import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
 
-export default tseslint.config(
-  {
-    ignores: ['coverage/', 'dist/', 'node_modules/', 'eslint.config.mjs', 'vitest.config.ts', 'esbuild.config.js'],
-  },
-  eslint.configs.recommended,
-  ...tseslint.configs.recommendedTypeChecked,
+export default defineConfig([
+  tseslint.configs.recommended,
   eslintPluginPrettierRecommended,
+  globalIgnores(['**/coverage', '**/dist', '**/node_modules']),
   {
+    files: ['**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+    plugins: { js },
+    extends: ['js/recommended'],
     languageOptions: {
       globals: {
+        ...globals.browser,
         ...globals.node,
-        ...globals.jest,
-      },
-      ecmaVersion: 5,
-      sourceType: 'module',
-      parserOptions: {
-        projectService: true,
-        tsconfigRootDir: import.meta.dirname,
       },
     },
-  },
-  {
     rules: {
-      '@typescript-eslint/no-explicit-any': 'warn',
-      '@typescript-eslint/no-floating-promises': 'warn',
-      '@typescript-eslint/no-unsafe-argument': 'warn',
-      "@typescript-eslint/no-unsafe-assignment": "off",
-      "@typescript-eslint/ban-ts-comment": "off",
+      'no-unused-vars': 'off',
       'prettier/prettier': [
         'error',
         {
+          printWidth: 120,
+          singleQuote: true,
+          endOfLine: 'auto',
           tabWidth: 2,
           useTabs: false,
-          singleQuote: true,
-          semi: true,
-          bracketSpacing: true,
-          arrowParens: 'always',
-          trailingComma: 'none',
-          bracketSameLine: true,
-          printWidth: 200,
-          endOfLine: 'auto'
         },
       ],
     },
-  }
-);
+  },
+]);
