@@ -49,5 +49,8 @@
   ],
   "bin": {
     "version-manager": "dist/index.cjs"
+  },
+  "engines": {
+    "node": ">=18"
   }
 }

@@ -66,7 +66,7 @@ export const getNewVersion = async ({
 
   let newVersion = pkg.version;
   while (true) {
-    const calculatedNewVersion = inc(newVersion, releaseType, preid);
+    const calculatedNewVersion = inc(newVersion, releaseType, preid ?? '');
     if (!calculatedNewVersion) throw new Error(`New version could not be calculated`);
     newVersion = calculatedNewVersion;
     const tag = getFilledTemplate(correctedTemplate, {

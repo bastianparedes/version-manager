@@ -14,7 +14,7 @@ build({
   entryPoints: [entryFile],
   bundle: true,
   platform: 'node',
-  target: 'node22',
+  target: 'node24',
   format: 'cjs',
   outfile: 'dist/index.cjs',
   banner: {
