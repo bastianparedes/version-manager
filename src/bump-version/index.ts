@@ -1,13 +1,12 @@
-import { getPkgToWork, getNewVersion, getReleaseData, setNewVersion } from './pkg';
-import { getLocalTags } from './variables';
-import { type BumpVersionOptions } from './types/options';
 import chalk from 'chalk';
 import git from './git';
+import { getNewVersion, getPkgToWork, getReleaseData, setNewVersion } from './pkg';
+import type { BumpVersionOptions } from './types/options';
+import { getLocalTags } from './variables';
 
 const bumpVersion = async (options: BumpVersionOptions) => {
   const thereAreUncommittedChanges = await git.getThereAreUncommittedChanges();
-  if (options.gitCheck && thereAreUncommittedChanges)
-    throw new Error('There are uncommitted changes in the repository. Please commit or stash them before proceeding.');
+  if (options.gitCheck && thereAreUncommittedChanges) throw new Error('There are uncommitted changes in the repository. Please commit or stash them before proceeding.');
   const pkg = await getPkgToWork();
   const branchData = await git.getBranchData(options.branch);
   const releaseData = await getReleaseData(branchData);

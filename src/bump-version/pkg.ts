@@ -1,9 +1,9 @@
+import { execa } from 'execa';
 import prompts from 'prompts';
 import { inc, type ReleaseType } from 'semver';
-import { execa } from 'execa';
 import { getFilledTemplate } from '../utils/template';
-import { getRemoteTags, getRepositoryData } from './variables';
 import git from './git';
+import { getRemoteTags, getRepositoryData } from './variables';
 
 type PkgType = {
   isMonoRepo: boolean;
@@ -85,23 +85,29 @@ export const getNewVersion = async ({
 };
 
 export const getReleaseData = async (branch: { isProduction: boolean; isUat: boolean; isDevelop: boolean }) => {
-  const { releaseType }: { releaseType: 'major' | 'minor' | 'patch' | 'premajor' | 'preminor' | 'prepatch' } =
-    await prompts({
-      type: 'select',
-      name: 'releaseType',
-      message: 'Which one describes better your changes?',
-      choices: [
-        { title: 'Your changes are breaking changes', value: branch.isProduction ? 'major' : 'premajor' },
-        {
-          title: 'Your changes do not break anything, but they add a new feature',
-          value: branch.isProduction ? 'minor' : 'preminor',
-        },
-        {
-          title: 'Your changes do not add a new feature, but they fix something',
-          value: branch.isProduction ? 'patch' : 'prepatch',
-        },
-      ],
-    });
+  const {
+    releaseType,
+  }: {
+    releaseType: 'major' | 'minor' | 'patch' | 'premajor' | 'preminor' | 'prepatch';
+  } = await prompts({
+    type: 'select',
+    name: 'releaseType',
+    message: 'Which one describes better your changes?',
+    choices: [
+      {
+        title: 'Your changes are breaking changes',
+        value: branch.isProduction ? 'major' : 'premajor',
+      },
+      {
+        title: 'Your changes do not break anything, but they add a new feature',
+        value: branch.isProduction ? 'minor' : 'preminor',
+      },
+      {
+        title: 'Your changes do not add a new feature, but they fix something',
+        value: branch.isProduction ? 'patch' : 'prepatch',
+      },
+    ],
+  });
 
   const preids = {
     main: undefined,
@@ -137,7 +143,9 @@ export const setNewVersion = async ({
   if (localTags.includes(tag)) {
     await git.removeTag(tag);
   }
-  await execa('npm', ['version', version, '--no-git-tag-version'], { cwd: pkg.path });
+  await execa('npm', ['version', version, '--no-git-tag-version'], {
+    cwd: pkg.path,
+  });
   if (commit) {
     await git.addAll();
     await git.commit(tag);

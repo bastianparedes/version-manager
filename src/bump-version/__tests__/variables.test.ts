@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import path from 'path';
+import path from 'node:path';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const git = {
   add: vi.fn(),

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const getRemoteTags = vi.fn();
 const getRepositoryData = vi.fn();
@@ -48,12 +48,38 @@ describe('version helpers', () => {
     getRemoteTags.mockReturnValue([]);
     getRepositoryData.mockReturnValue({
       isMonoRepo: true,
-      rootPkg: { name: 'root', version: '1.0.0', path: '/root', jsonPath: '/root/package.json', isMonoRepo: true },
+      rootPkg: {
+        name: 'root',
+        version: '1.0.0',
+        path: '/root',
+        jsonPath: '/root/package.json',
+        isMonoRepo: true,
+      },
       allPkgs: [
-        { name: 'root', version: '1.0.0', path: '/root', jsonPath: '/root/package.json', isMonoRepo: true },
-        { name: 'sub', version: '0.1.0', path: '/sub', jsonPath: '/sub/package.json', isMonoRepo: true },
+        {
+          name: 'root',
+          version: '1.0.0',
+          path: '/root',
+          jsonPath: '/root/package.json',
+          isMonoRepo: true,
+        },
+        {
+          name: 'sub',
+          version: '0.1.0',
+          path: '/sub',
+          jsonPath: '/sub/package.json',
+          isMonoRepo: true,
+        },
       ],
-      subPkgs: [{ name: 'sub', version: '0.1.0', path: '/sub', jsonPath: '/sub/package.json', isMonoRepo: true }],
+      subPkgs: [
+        {
+          name: 'sub',
+          version: '0.1.0',
+          path: '/sub',
+          jsonPath: '/sub/package.json',
+          isMonoRepo: true,
+        },
+      ],
     });
     incMock.mockReturnValue('0.1.1');
   });
@@ -77,8 +103,22 @@ describe('version helpers', () => {
     it('should return root package in single repo', async () => {
       getRepositoryData.mockReturnValue({
         isMonoRepo: false,
-        rootPkg: { name: 'root', version: '1.0.0', path: '/root', jsonPath: '/root/package.json', isMonoRepo: false },
-        allPkgs: [{ name: 'root', version: '1.0.0', path: '/root', jsonPath: '/root/package.json', isMonoRepo: false }],
+        rootPkg: {
+          name: 'root',
+          version: '1.0.0',
+          path: '/root',
+          jsonPath: '/root/package.json',
+          isMonoRepo: false,
+        },
+        allPkgs: [
+          {
+            name: 'root',
+            version: '1.0.0',
+            path: '/root',
+            jsonPath: '/root/package.json',
+            isMonoRepo: false,
+          },
+        ],
         subPkgs: [],
       });
       const { getPkgToWork } = await import('../pkg');
@@ -105,7 +145,13 @@ describe('version helpers', () => {
       incMock.mockReturnValue('1.0.1');
       const { getNewVersion } = await import('../pkg');
       const result = await getNewVersion({
-        pkg: { name: 'root', version: '1.0.0', path: '/root', jsonPath: '', isMonoRepo: false },
+        pkg: {
+          name: 'root',
+          version: '1.0.0',
+          path: '/root',
+          jsonPath: '',
+          isMonoRepo: false,
+        },
         releaseType: 'patch',
         preid: undefined,
         commitMsgTemplate: undefined,
@@ -118,7 +164,13 @@ describe('version helpers', () => {
       incMock.mockReturnValue('0.1.1');
       const { getNewVersion } = await import('../pkg');
       const result = await getNewVersion({
-        pkg: { name: 'sub', version: '0.1.0', path: '/sub', jsonPath: '/sub/package.json', isMonoRepo: true },
+        pkg: {
+          name: 'sub',
+          version: '0.1.0',
+          path: '/sub',
+          jsonPath: '/sub/package.json',
+          isMonoRepo: true,
+        },
         releaseType: 'patch',
         preid: undefined,
         commitMsgTemplate: undefined,
@@ -132,7 +184,13 @@ describe('version helpers', () => {
       const { getNewVersion } = await import('../pkg');
       await expect(
         getNewVersion({
-          pkg: { name: 'root', version: '1.0.0', path: '/root', jsonPath: '', isMonoRepo: false },
+          pkg: {
+            name: 'root',
+            version: '1.0.0',
+            path: '/root',
+            jsonPath: '',
+            isMonoRepo: false,
+          },
           releaseType: 'patch',
           preid: undefined,
           commitMsgTemplate: undefined,
@@ -145,7 +203,11 @@ describe('version helpers', () => {
     it('should return production release type', async () => {
       const { getReleaseData } = await import('../pkg');
       promptsMock.mockReturnValue({ releaseType: 'minor' });
-      const result = await getReleaseData({ isProduction: true, isUat: false, isDevelop: false });
+      const result = await getReleaseData({
+        isProduction: true,
+        isUat: false,
+        isDevelop: false,
+      });
       expect(result.preid).toBeUndefined();
       expect(result.releaseType).toBe('minor');
     });
@@ -153,21 +215,33 @@ describe('version helpers', () => {
     it('should return uat release type', async () => {
       const { getReleaseData } = await import('../pkg');
       promptsMock.mockReturnValue({ releaseType: 'preminor' });
-      const result = await getReleaseData({ isProduction: false, isUat: true, isDevelop: false });
+      const result = await getReleaseData({
+        isProduction: false,
+        isUat: true,
+        isDevelop: false,
+      });
       expect(result.preid).toBe('rc');
     });
 
     it('should return develop release type', async () => {
       const { getReleaseData } = await import('../pkg');
       promptsMock.mockReturnValue({ releaseType: 'prepatch' });
-      const result = await getReleaseData({ isProduction: false, isUat: false, isDevelop: true });
+      const result = await getReleaseData({
+        isProduction: false,
+        isUat: false,
+        isDevelop: true,
+      });
       expect(result.preid).toBe('beta');
     });
 
     it('should return default alpha release type', async () => {
       const { getReleaseData } = await import('../pkg');
       promptsMock.mockReturnValue({ releaseType: 'premajor' });
-      const result = await getReleaseData({ isProduction: false, isUat: false, isDevelop: false });
+      const result = await getReleaseData({
+        isProduction: false,
+        isUat: false,
+        isDevelop: false,
+      });
       expect(result.preid).toBe('alpha');
     });
   });
@@ -178,7 +252,13 @@ describe('version helpers', () => {
       await setNewVersion({
         version: '1.0.1',
         tag: 'v1.0.1',
-        pkg: { path: '/root', isMonoRepo: false, jsonPath: '', name: '', version: '' },
+        pkg: {
+          path: '/root',
+          isMonoRepo: false,
+          jsonPath: '',
+          name: '',
+          version: '',
+        },
         localTags: ['v1.0.1'],
         commit: true,
         push: false,
@@ -196,7 +276,13 @@ describe('version helpers', () => {
       await setNewVersion({
         version: '1.0.1',
         tag: 'v1.0.1',
-        pkg: { path: '/root', isMonoRepo: false, jsonPath: '', name: '', version: '' },
+        pkg: {
+          path: '/root',
+          isMonoRepo: false,
+          jsonPath: '',
+          name: '',
+          version: '',
+        },
         localTags: [],
         commit: false,
         push: false,
@@ -212,7 +298,13 @@ describe('version helpers', () => {
       await setNewVersion({
         version: '1.0.1',
         tag: 'v1.0.1',
-        pkg: { path: '/root', isMonoRepo: false, jsonPath: '', name: '', version: '' },
+        pkg: {
+          path: '/root',
+          isMonoRepo: false,
+          jsonPath: '',
+          name: '',
+          version: '',
+        },
         localTags: [],
         commit: true,
         push: true,

@@ -1,7 +1,7 @@
-import fs from 'fs/promises';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 import { glob } from 'glob';
-import path from 'path';
-import { type PackageJson } from 'type-fest';
+import type { PackageJson } from 'type-fest';
 import git from './git';
 
 export const localTagsPromise = git.getLocalTags();

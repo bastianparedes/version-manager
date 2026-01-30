@@ -1,7 +1,7 @@
 import { Command } from 'commander';
-import { bumpVersion } from './bump-version';
 import packageJson from '../package.json';
-import { type BumpVersionOptions } from './bump-version/types/options';
+import { bumpVersion } from './bump-version';
+import type { BumpVersionOptions } from './bump-version/types/options';
 
 export const program = new Command();
 
@@ -26,9 +26,7 @@ program
       '    {package_version} - version of the package\n',
   )
   .action((options: BumpVersionOptions) => {
-    console.log(
-      `Runing \x1b[4m\x1b[92m${packageJson.name}\x1b[0m version \x1b[4m\x1b[92m${packageJson.version}\x1b[0m`,
-    );
+    console.log(`Runing \x1b[4m\x1b[92m${packageJson.name}\x1b[0m version \x1b[4m\x1b[92m${packageJson.version}\x1b[0m`);
     void bumpVersion(options);
   });
 

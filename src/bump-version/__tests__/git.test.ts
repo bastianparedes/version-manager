@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const execa = vi.fn();
 
@@ -130,7 +130,9 @@ describe('git helpers', () => {
       const tags = await git.getLocalTags();
 
       expect(tags).toEqual(['v1.0.0', 'v1.1.0']);
-      expect(execa).toHaveBeenCalledWith('git', ['tag', '--list'], { cwd: process.cwd() });
+      expect(execa).toHaveBeenCalledWith('git', ['tag', '--list'], {
+        cwd: process.cwd(),
+      });
     });
   });
 
@@ -139,7 +141,9 @@ describe('git helpers', () => {
       const { default: git } = await import('../git');
       await git.tag('v2.0.0');
 
-      expect(execa).toHaveBeenCalledWith('git', ['tag', 'v2.0.0'], { cwd: process.cwd() });
+      expect(execa).toHaveBeenCalledWith('git', ['tag', 'v2.0.0'], {
+        cwd: process.cwd(),
+      });
     });
   });
 

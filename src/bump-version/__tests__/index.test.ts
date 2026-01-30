@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const git = {
   add: vi.fn(),
@@ -66,9 +66,7 @@ describe('bumpVersion', () => {
         json: false,
         push: false,
       }),
-    ).rejects.toThrowError(
-      'There are uncommitted changes in the repository. Please commit or stash them before proceeding.',
-    );
+    ).rejects.toThrowError('There are uncommitted changes in the repository. Please commit or stash them before proceeding.');
   });
 
   it('executes full flow when there are no uncommitted changes', async () => {

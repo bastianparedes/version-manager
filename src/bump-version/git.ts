@@ -7,7 +7,9 @@ export default {
   push: () => execa('git', ['push']),
   pushTag: (name: string) => execa('git', ['push', 'origin', name]),
   getLocalTags: async () => {
-    const { stdout } = await execa('git', ['tag', '--list'], { cwd: process.cwd() });
+    const { stdout } = await execa('git', ['tag', '--list'], {
+      cwd: process.cwd(),
+    });
     return stdout.split('\n').filter(Boolean);
   },
   tag: (tagName: string) => execa('git', ['tag', tagName], { cwd: process.cwd() }),
